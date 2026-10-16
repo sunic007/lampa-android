@@ -1,0 +1,38 @@
+name: 🐞 Bug report / Ошибка
+description: Something doesn't work / Что-то не работает
+labels: [bug]
+body:
+  - type: input
+    id: device
+    attributes:
+      label: Device / Устройство / Qurilma
+      placeholder: Xiaomi Mi Box S, Android 9 / Samsung S23, Android 14
+    validations:
+      required: true
+  - type: input
+    id: app
+    attributes:
+      label: Lampa app and version / Приложение Lampa и версия / Lampa ilovasi va versiyasi
+      placeholder: Lampa BS 0.1.0.935
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version / Версия плагина / Plagin versiyasi
+      description: Settings → Sunic Apps → «Обновление» / Настройки → Sunic Apps → Обновление
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area / Где / Qayerda
+      options: [Player / Плеер, Telegram bot / Telegram-бот, Sources / Источники, Updates / Обновление, Other / Другое]
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened / Что произошло / Nima bo'ldi
+      description: Steps, a screenshot / Шаги, скриншот
+    validations:
+      required: true

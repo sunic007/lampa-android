@@ -1,0 +1,10 @@
+name: 💡 Idea / Идея / G'oya
+description: Suggest a feature / Предложить функцию / Imkoniyat taklif qilish
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea / Идея / G'oya
+    validations:
+      required: true

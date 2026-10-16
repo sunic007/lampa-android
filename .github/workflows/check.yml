@@ -1,0 +1,38 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+
+      # в том числе сверка раскладки настроек с loader.js Lampa для Samsung по тегу из version.json
+      - name: Unit tests
+        run: node tests/run.cjs
+
+      # Старые Android TV со старым WebView понимают только ES5
+      - name: ES5 syntax
+        run: |
+          for f in docs/sunic.js src/android.js; do
+            npx -y acorn@8.14.0 --ecma5 --silent "$f" || { echo "::error file=$f::not ES5"; exit 1; }
+          done
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      # version.json и PIN загрузчика совпадают с тем, что записал бы tools/bump.py
+      - name: Release files are up to date
+        run: python tools/bump.py && git diff --exit-code version.json docs/sunic.js
