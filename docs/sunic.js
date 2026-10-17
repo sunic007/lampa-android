@@ -24,7 +24,7 @@
     var SAMSUNG = 'https://raw.githubusercontent.com/sunic007/lampa-samsung/main/version.json';
     var MIRRORS = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/'];
     // на случай, когда GitHub недоступен и ничего не запомнено; tools/bump.py вписывает сюда выпуск из version.json
-    var PIN = { version: '1.0.1', samsung: '2.2.1', modules: ['skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
+    var PIN = { version: '2.2.4', samsung: '2.2.4', modules: ['skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
     // не для Android: loader.js грузит ядро Lampa (его заменяет src/android.js), update.js/polyfills.js — для Tizen,
     // bshub.js — панель Smart Hub, bsvolume.js — громкость через tizen.tvaudiocontrol
     var SAMSUNG_ONLY = { 'loader.js': 1, 'update.js': 1, 'polyfills.js': 1, 'bshub.js': 1, 'bsvolume.js': 1 };
@@ -219,13 +219,15 @@
         running = { version: plug.version, samsung: sam.v, modules: sam.modules, mirror: plug.mirror };
         window.SunicAndroid.samsung = sam.v;
         window.BS_REMOTE_VERSION = sam.v;                       // бот сравнивает версии модулей с другими ТВ
-        var tryKey = plug.version + '/' + sam.v, prevTry = get('sa_try');
-        // прошлый запуск на этих версиях до готовности Lampa не дошёл — виновата новая: модули Samsung, иначе плагин
-        if (prevTry === tryKey) {
+        // «пробую версии»: метка «версии|сколько запусков подряд не дошли до готовности Lampa». Одна неудача — ещё не
+        // приговор (Lampa могли закрыть в первые секунды); две подряд — виновата новая: модули Samsung, иначе плагин
+        var tryKey = plug.version + '/' + sam.v, prev = String(get('sa_try') || '').split('|');
+        var fails = prev[0] === tryKey ? (+prev[1] || 1) : 0;
+        if (fails >= 2) {
             if (sam.v !== keep.v) { set('sa_sam_bad', sam.v + '|' + Date.now()); return go(plug, keep, keep); }
             if (plug.version !== PIN.version) { set('sa_upd_bad', plug.version + '|' + Date.now()); set('sa_try', null); return start(); }
         }
-        set('sa_try', tryKey);
+        set('sa_try', tryKey + '|' + (fails + 1));
         log('загружаю', plug.version, '· модули Lampa для Samsung ' + sam.v);
         loadAll(running, function (ok, where) {
             if (!ok) {

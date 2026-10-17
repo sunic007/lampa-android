@@ -1,12 +1,13 @@
-"""Выпуск плагина: версия, модули Samsung, «что нового» — в version.json и в PIN загрузчика (docs/sunic.js).
+"""Выпуск плагина. Номер версии плагина = номер выпуска Lampa для Samsung (тег vX.Y.Z один и тот же в обоих репозиториях).
 
     python tools/bump.py                 # та же версия: пересобрать version.json и PIN (проверка перед коммитом)
-    python tools/bump.py patch           # 1.0.0 → 1.0.1
-    python tools/bump.py minor           # 1.0.1 → 1.1.0
-    python tools/bump.py --samsung 2.1.2 # перейти на модули другой ВЫПУЩЕННОЙ версии Lampa для Samsung
+    python tools/bump.py --samsung 2.2.2 # выпуск под новую ВЫПУЩЕННУЮ версию Lampa для Samsung (тег v2.2.2 уже есть)
 
-Запасной список модулей (плагин сам берёт последний выпуск; этот — когда GitHub недоступен) — из version.json пакета Samsung по тегу v<samsung> (raw.githubusercontent), без loader.js
-(его заменяет src/android.js) и без модулей только для Samsung (bshub, bsvolume). Потом — автотесты; не прошли — стоп.
+Обычно это делает сам .github/workflows/follow-samsung.yml: вышел тег в lampa-samsung — тот же тег здесь.
+Пишет version.json и PIN загрузчика (docs/sunic.js): запасной список модулей (плагин сам берёт последний выпуск; этот —
+когда GitHub недоступен) из version.json пакета Samsung по тегу, без loader.js (его заменяет src/android.js) и без модулей
+только для Samsung. «Что нового» — раздел «## X.Y.Z» из .github/CHANGELOG.md; его нет — раздел пишется из «что нового»
+выпуска для Samsung. Потом — автотесты; не прошли — стоп.
 """
 import io, json, os, re, subprocess, sys, urllib.request
 
@@ -32,7 +33,7 @@ def samsung_modules(ver):
         die('не прочитать %s (%s) — такой версии Lampa для Samsung нет или нет сети' % (url, e))
     if data.get('version') != ver:
         die('по тегу v%s лежит version.json версии %s' % (ver, data.get('version')))
-    return [f for f in data['files'] if f not in SAMSUNG_ONLY]
+    return [f for f in data['files'] if f not in SAMSUNG_ONLY], data.get('notes') or {}
 
 
 def changelog_notes(version):
@@ -54,39 +55,52 @@ def changelog_notes(version):
         elif line.startswith('  ') and items:
             items[-1] += ' ' + line.strip()
     if not inside:
-        die('в .github/CHANGELOG.md нет раздела «## %s — …» — сначала опишите выпуск' % version)
+        return None
     clean = lambda t: re.sub(r'\*\*|`', '', t).strip()
     short = lambda t: t if len(t) <= 220 else t[:217].rstrip() + '…'
     return {'title': clean(title)[:120], 'items': [short(clean(i)) for i in items[:6]]}
 
 
+def add_changelog(version, notes):
+    """Раздел «## X.Y.Z — …» для выпуска, о котором в CHANGELOG ничего нет: «что нового» Lampa для Samsung."""
+    path = os.path.join(ROOT, '.github', 'CHANGELOG.md')
+    text = io.open(path, encoding='utf-8', newline='').read()
+    nl = '\r\n' if '\r\n' in text else '\n'
+    title = str(notes.get('title') or '').strip() or 'как в Lampa для Samsung %s' % version
+    items = [str(i).strip() for i in (notes.get('items') or []) if str(i).strip()][:6] or ['Функции Lampa для Samsung %s.' % version]
+    block = '## %s — %s%s' % (version, title, nl) + ''.join('- %s%s' % (i, nl) for i in items) + nl
+    m = re.search(r'^## ', text, re.M)
+    text = text[:m.start()] + block + text[m.start():] if m else text + nl + block
+    io.open(path, 'w', encoding='utf-8', newline='').write(text)
+
+
 def main(argv):
-    bump, samsung = None, None
+    samsung = None
     i = 0
     while i < len(argv):
         a = argv[i]
-        if a in ('patch', 'minor'):
-            bump = a
-        elif a == '--samsung' and i + 1 < len(argv):
+        if a == '--samsung' and i + 1 < len(argv):
             samsung = argv[i + 1]
             i += 1
         else:
-            die('непонятный аргумент: %s' % a)
+            die('непонятный аргумент: %s (номер плагина = номер Lampa для Samsung: --samsung X.Y.Z)' % a)
         i += 1
 
     vpath = os.path.join(ROOT, 'version.json')
     cur = json.load(io.open(vpath, encoding='utf-8'))
-    ver = num(cur['version']) or die('version.json: плохая версия %r' % cur['version'])
-    if bump == 'patch':
-        ver = (ver[0], ver[1], ver[2] + 1)
-    elif bump == 'minor':
-        ver = (ver[0], ver[1] + 1, 0)
-    version = '%d.%d.%d' % ver
     samsung = samsung or cur['samsung']
     if not num(samsung):
         die('плохая версия Samsung: %r' % samsung)
+    if num(samsung) < (num(cur['samsung']) or (0, 0, 0)):
+        die('%s старее текущей %s' % (samsung, cur['samsung']))
+    version = samsung
+    modules, sam_notes = samsung_modules(samsung)
+    notes = changelog_notes(version)
+    if notes is None:
+        add_changelog(version, sam_notes)
+        notes = changelog_notes(version)
 
-    data = {'version': version, 'samsung': samsung, 'modules': samsung_modules(samsung), 'notes': changelog_notes(version)}
+    data = {'version': version, 'samsung': samsung, 'modules': modules, 'notes': notes}
     with io.open(vpath, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(data, f, ensure_ascii=False, indent=1)
         f.write('\n')

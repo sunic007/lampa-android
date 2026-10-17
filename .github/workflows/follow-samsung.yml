@@ -1,0 +1,69 @@
+name: Follow Lampa for Samsung
+
+# Номер версии плагина = номер Lampa для Samsung. Вышел тег vX.Y.Z в sunic007/lampa-samsung — здесь тот же тег:
+# version.json и PIN загрузчика (запасные модули) — под этот выпуск, «что нового» — из выпуска для Samsung,
+# если в CHANGELOG нет своего раздела. Плагин у людей и так берёт модули последнего выпуска сам; этот тег —
+# чтобы номера совпадали и чтобы src/android.js того же номера лежал на jsDelivr.
+
+on:
+  schedule:
+    - cron: '17 * * * *'      # каждый час
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: follow-samsung
+  cancel-in-progress: false
+
+jobs:
+  follow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Latest Lampa for Samsung release
+        id: sam
+        run: |
+          set -e
+          ver=$(curl -fsSL "https://raw.githubusercontent.com/sunic007/lampa-samsung/main/version.json?t=$(date +%s)" | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])')
+          echo "Lampa для Samsung: $ver"
+          # только выпущенная версия: тег уже есть в lampa-samsung
+          if ! git ls-remote --exit-code --tags https://github.com/sunic007/lampa-samsung.git "refs/tags/v$ver" >/dev/null; then
+            echo "тега v$ver в lampa-samsung ещё нет — ждём"; exit 0
+          fi
+          if git rev-parse -q --verify "refs/tags/v$ver" >/dev/null; then
+            echo "v$ver уже есть"; exit 0
+          fi
+          cur=$(python3 -c 'import json; print(json.load(open("version.json"))["version"])')
+          newer=$(python3 -c "import sys; t=lambda v: tuple(map(int, v.split('.'))); print(int(t('$ver') > t('$cur')))")
+          if [ "$newer" != "1" ]; then echo "v$ver не новее $cur"; exit 0; fi
+          echo "ver=$ver" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.sam.outputs.ver
+        with:
+          node-version: 20
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: steps.sam.outputs.ver
+        with:
+          python-version: '3.12'
+
+      - name: Release ${{ steps.sam.outputs.ver }}
+        if: steps.sam.outputs.ver
+        env:
+          VER: ${{ steps.sam.outputs.ver }}
+        run: |
+          set -e
+          python tools/bump.py --samsung "$VER"
+          for f in docs/sunic.js src/android.js; do npx -y acorn@8.14.0 --ecma5 --silent "$f"; done
+          git config user.name 'sunic007'
+          git config user.email '199752350+sunic007@users.noreply.github.com'
+          git add version.json docs/sunic.js .github/CHANGELOG.md
+          git commit -m "$VER: как в Lampa для Samsung $VER"
+          git tag "v$VER"
+          git push origin HEAD:main "v$VER"

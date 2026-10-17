@@ -21,7 +21,7 @@ body:
     attributes:
       label: Plugin version / Версия плагина / Plagin versiyasi
       description: Settings → Sunic Apps → «Обновление» / Настройки → Sunic Apps → Обновление
-      placeholder: "1.0.0"
+      placeholder: "2.2.1"
     validations:
       required: true
   - type: dropdown

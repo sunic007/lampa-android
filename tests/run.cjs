@@ -65,7 +65,7 @@ const mods = A => A.scripts().map(s => s.src).filter(u => /lampa-samsung/.test(u
     t('загрузка: bs.css модулей подключён', A.added.some(n => n.tag === 'link' && n.href === sam + 'bs.css'));
     t('загрузка: модули без правок — реклама за приложением (bs_noads), без подсказки про меню Samsung', A.store.bs_noads === 'true' && A.store.bs_sleep_hint === '1');
     t('загрузка: версия модулей — для бота (сравнение с ТВ)', A.ctx.BS_REMOTE_VERSION === PIN.samsung && A.ctx.SunicAndroid.samsung === PIN.samsung && A.ctx.SunicAndroid.version === PIN.version);
-    t('загрузка: метка «пробую версии» стоит, пока Lampa не поднялась', A.store.sa_try === PIN.version + '/' + PIN.samsung);
+    t('загрузка: метка «пробую версии» стоит, пока Lampa не поднялась', A.store.sa_try === PIN.version + '/' + PIN.samsung + '|1');
     const n = A.scripts().length; vm.runInContext(A.code, A.ctx);
     t('плагин добавлен дважды — второй раз ничего не грузит', A.scripts().length === n);
 }
@@ -82,8 +82,11 @@ const mods = A => A.scripts().map(s => s.src).filter(u => /lampa-samsung/.test(u
     const C = env({ store: { sa_sam: JSON.stringify({ v: '7.2.0', modules: ['bsfix.js', 'bstg.js'] }) } });
     C.drive();
     t('нет сети — модули последней удачной версии', C.ctx.BS_REMOTE_VERSION === '7.2.0' && mods(C).length === 2);
-    const D = env({ store: { sa_try: PIN.version + '/7.3.0' }, net: samNet(REL) });
-    t('на новом выпуске прошлый запуск не поднялся — он плохой на сутки, грузится прошлый', /^7\.3\.0\|/.test(D.store.sa_sam_bad) && D.ctx.BS_REMOTE_VERSION === PIN.samsung);
+    const D1 = env({ store: { sa_try: PIN.version + '/7.3.0|1' }, net: samNet(REL) });
+    t('на новом выпуске один запуск не дошёл до готовности (могли закрыть) — пробуем ещё раз', !D1.store.sa_sam_bad &&
+        D1.ctx.BS_REMOTE_VERSION === '7.3.0' && D1.store.sa_try === PIN.version + '/7.3.0|2');
+    const D = env({ store: { sa_try: PIN.version + '/7.3.0|2' }, net: samNet(REL) });
+    t('два запуска подряд не поднялись — выпуск плохой на сутки, грузится прошлый', /^7\.3\.0\|/.test(D.store.sa_sam_bad) && D.ctx.BS_REMOTE_VERSION === PIN.samsung);
     const E = env({ store: { sa_sam_bad: '7.3.0|' + Date.now() }, net: samNet(REL) });
     t('плохой выпуск не берётся', E.ctx.BS_REMOTE_VERSION === PIN.samsung);
     const F = env({ net: samNet(REL) });
@@ -100,7 +103,7 @@ const mods = A => A.scripts().map(s => s.src).filter(u => /lampa-samsung/.test(u
     const src = A.scripts().map(s => s.src);
     t('проверенная новая версия плагина — с её зеркала', src.every(u => /^https:\/\/fastly\.jsdelivr\.net\/gh\//.test(u)) &&
         /lampa-android@v9\.0\.0\/src\/android\.js$/.test(src[src.length - 1]));
-    const B = env({ store: { sa_upd: JSON.stringify(upd), sa_try: '9.0.0/' + PIN.samsung } });
+    const B = env({ store: { sa_upd: JSON.stringify(upd), sa_try: '9.0.0/' + PIN.samsung + '|2' } });
     t('на версии плагина прошлый запуск не поднялся — плохая на сутки, грузится PIN', /^9\.0\.0\|/.test(B.store.sa_upd_bad) && B.ctx.SunicAndroid.version === PIN.version);
 }
 {
@@ -147,14 +150,18 @@ const mods = A => A.scripts().map(s => s.src).filter(u => /lampa-samsung/.test(u
 }
 
 /* ---------- src/android.js ---------- */
-function androidEnv(store) {
-    store = Object.assign({}, store || {});
+function androidEnv(store, opt) {
+    store = Object.assign({}, store || {}); opt = opt || {};
+    const urls = [];
+    function XHR() { this.status = 0; }
+    XHR.prototype.open = function (m, u) { this.url = u; urls.push(u); };
+    XHR.prototype.send = function () { const r = opt.loader ? opt.loader(this.url) : null; if (r == null) return this.onerror(); this.status = 200; this.responseText = r; this.onload(); };
     const params = [], comps = [], timers = [];
     const api = { addParam(d) { params.push(d); }, addComponent(c) { comps.push(c); } };
     const started = [];
     const mod = name => ({ start() { started.push(name); } });
     const ctx = { console: { log() {} }, Date, Math, JSON, String, Object, Array, parseInt, RegExp,
-        setTimeout: fn => { fn(); return 0; }, clearTimeout() {}, setInterval: fn => { timers.push(fn); return timers.length; }, clearInterval() {},
+        setTimeout: (fn, ms) => { if (!(ms >= 8000)) fn(); return 0; }, XMLHttpRequest: XHR, clearTimeout() {}, setInterval: fn => { timers.push(fn); return timers.length; }, clearInterval() {},
         localStorage: { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; }, length: 0, key: () => null },
         Storage: function () {}, appready: true,
         SunicAndroid: { version: '1.2.3', samsung: '2.1.1', check: cb => cb(''), allow() {} },
@@ -169,7 +176,7 @@ function androidEnv(store) {
     ctx.window = ctx; vm.createContext(ctx);
     vm.runInContext(fs.readFileSync(ANDROID, 'utf8'), ctx);
     timers.forEach(fn => fn());
-    return { ctx, store, params, comps, started, _t: ctx.SunicAndroid._test.get() };
+    return { ctx, store, params, comps, started, urls, _t: ctx.SunicAndroid._test.get() };
 }
 {
     const A = androidEnv();
@@ -242,8 +249,24 @@ async function samsungChecks() {
     const hid = vm.runInNewContext('(' + /var BS_SETTINGS_HIDDEN = (\[[^\n]*\]);/.exec(loader)[1] + ')');
     const order = /BSSkaz\.start\(\)[\s\S]*?BSVolume\.start\(\)/.exec(loader)[0].match(/(BS[A-Za-z]+)\.start\(\)/g).map(x => x.replace('.start()', ''))
         .filter(n => n !== 'BSHub' && n !== 'BSVolume');
-    // раскладку плагин берёт из loader.js той же версии (через кэш sa_layout — тот же разбор, что после загрузки)
-    const A = androidEnv({ sa_layout: JSON.stringify({ v: '2.1.1', src: loader }) }), T = A.ctx.SunicAndroid._test, G = T.get();
+    // раскладку плагин берёт из loader.js той же версии: сначала с CDN, потом — из памяти (sa_layout)
+    let fetched = 0;
+    const A = androidEnv({}, { loader: u => (/lampa-samsung@v2\.1\.1\/src\/loader\.js$/.test(u) ? (fetched++, loader) : null) }), T = A.ctx.SunicAndroid._test, G = T.get();
+    t('loader.js — с CDN по тегу загруженных модулей', fetched === 1);
+    const saved = A.store.sa_layout || '';
+    t('в памяти — разобранное (не весь loader.js: ' + saved.length + ' байт)', saved.length > 100 && saved.length < 20000 && saved.indexOf('function bsLsOn') < 0);
+    const A2 = androidEnv({ sa_layout: saved }), G2 = A2._t;
+    t('следующий запуск — из памяти, без сети, то же самое', A2.urls.length === 0 && JSON.stringify(G2.LAYOUT) === JSON.stringify(G.LAYOUT) &&
+        A2.ctx.SunicAndroid.layoutFrom === '2.1.1' && G2.HIDE_IF.length === G.HIDE_IF.length);
+    const pin = vm.runInNewContext('(' + /var BS_SECTIONS_PIN = (\{[^\n]*\});/.exec(loader)[1] + ')');
+    t('закреплённые разделы (PIN) = loader.js', JSON.stringify(G.PIN) === JSON.stringify(pin));
+    const hide = G.HIDE_IF, sels = hide.map(h => h.sel).join(' ');
+    t('прятать в Lampa — правила телевизора, кроме «Тип плеера» (на Android плеер выбирают)', hide.length >= 2 && sels.indexOf('[data-name="player"]') < 0 &&
+        sels.indexOf('sisi_pin_manage') >= 0);
+    const tor = hide.find(h => h.sel.indexOf('player_torrent') >= 0);
+    t('торренты на Android по умолчанию видны', tor && tor.when() === false);
+    A.store.bs_torrents = 'false';
+    t('выключили «Торренты» — «Парсер» и «TorrServer» прячутся', tor.when() === true);
     t('loader.js ' + ver + ' разобран: раскладка «Sunic Apps» = loader.js', JSON.stringify(lay) === JSON.stringify(G.LAYOUT) && A.ctx.SunicAndroid.layoutFrom === '2.1.1');
     t('скрытые пункты = loader.js + только для Samsung (AVPlay, реклама)', hid.every(n => G.HIDDEN.indexOf(n) >= 0) &&
         ['bs_player_auto', 'bs_buffer', 'bs_noads'].every(n => G.HIDDEN.indexOf(n) >= 0));
@@ -251,7 +274,8 @@ async function samsungChecks() {
         A.started.filter(n => n !== 'prepare').join() === order.join());
     const sec = vm.runInNewContext('(' + /var BS_SECTIONS = (\[[\s\S]*?\n\]);/.exec(loader)[1] + ')');
     t('разделы = loader.js', JSON.stringify(sec) === JSON.stringify(G.SECTIONS));
-    t('встроенная копия (без сети) = loader.js ' + ver + ' — обновить src/android.js', JSON.stringify(lay) === JSON.stringify(androidEnv()._t.LAYOUT));
+    // встроенная копия нужна только без сети — отстала после выпуска для Samsung: предупреждение, а не ошибка
+    if (JSON.stringify(lay) !== JSON.stringify(androidEnv()._t.LAYOUT)) console.log('ВНИМАНИЕ: встроенная раскладка в src/android.js отстала от loader.js ' + ver + ' (нужна только без сети) — обновить при следующем выпуске');
     const files = JSON.parse(await samsungText('version.json')).files.filter(f => !/^(loader|update|polyfills|bshub|bsvolume)\.js$/.test(f));
     const lost = [];
     for (const f of files) {

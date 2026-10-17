@@ -371,38 +371,66 @@
     function isArr(a) { return Object.prototype.toString.call(a) === '[object Array]'; }
     function strs(a) { return isArr(a) && a.every(function (x) { return typeof x === 'string'; }); }
 
-    /** Разбор loader.js: { sections, layout, hidden, needs, modules } или null, если что-то не так. */
+    /** Разбор loader.js: всё, что повторяем, — в виде, который можно сохранить (JSON), или null, если что-то не так.
+     *  Правила «что из Lampa прятать» (BS_SETTINGS_HIDE_IF) содержат функции — их храним текстом. */
     function parseLoader(src) {
         src = String(src || '');
-        var sections = value(src, 'BS_SECTIONS'), layout = value(src, 'BS_SETTINGS_LAYOUT'),
-            hidden = value(src, 'BS_SETTINGS_HIDDEN'), needs = value(src, 'BS_SETTINGS_NEEDS');
-        if (!isArr(sections) || !sections.length || !sections.every(function (s) { return strs(s) && s.length >= 2; })) return null;
-        if (!isArr(layout) || !layout.length || !layout.every(function (l) { return isArr(l) && typeof l[0] === 'string' && strs(l[1]); })) return null;
-        if (!strs(hidden)) return null;
-        if (!needs || typeof needs !== 'object' || isArr(needs)) needs = {};
         var order = [], re = /\btry\s*\{\s*(BS\w+)\.start\(\)/g, m;
         while ((m = re.exec(src))) if (!SAMSUNG_ONLY_MODULES[m[1]] && order.indexOf(m[1]) < 0) order.push(m[1]);
-        return { sections: sections, layout: layout, hidden: hidden, needs: needs, modules: order };
+        var p = { sections: value(src, 'BS_SECTIONS'), layout: value(src, 'BS_SETTINGS_LAYOUT'), hidden: value(src, 'BS_SETTINGS_HIDDEN'),
+            needs: value(src, 'BS_SETTINGS_NEEDS'), pin: value(src, 'BS_SECTIONS_PIN'), hideIf: literal(src, 'BS_SETTINGS_HIDE_IF'), modules: order };
+        return checkParsed(p) ? p : null;
+    }
+    function checkParsed(p) {
+        if (!p || typeof p !== 'object') return false;
+        if (!isArr(p.sections) || !p.sections.length || !p.sections.every(function (s) { return strs(s) && s.length >= 2; })) return false;
+        if (!isArr(p.layout) || !p.layout.length || !p.layout.every(function (l) { return isArr(l) && typeof l[0] === 'string' && strs(l[1]); })) return false;
+        if (!strs(p.hidden) || !strs(p.modules)) return false;
+        if (!p.needs || typeof p.needs !== 'object' || isArr(p.needs)) p.needs = {};
+        if (!p.pin || typeof p.pin !== 'object' || isArr(p.pin)) p.pin = null;
+        if (typeof p.hideIf !== 'string') p.hideIf = null;
+        return true;
+    }
+    /** Правила «что из Lampa прятать» с телевизора — с поправками для Android:
+     *  «Тип плеера» на ТВ прячет автовыбор AVPlay — здесь плеер выбирает человек, не прячем;
+     *  торренты на Android — обычное дело: «Парсер» и «TorrServer» видны, пока «Торренты» не выключены. */
+    function androidHideIf(text) {
+        var list = null;
+        try { list = new Function('bsLsOn', 'return ' + text)(lsOn); } catch (e) { return null; }    // eslint-disable-line no-new-func
+        if (!isArr(list)) return null;
+        var out = [];
+        for (var i = 0; i < list.length; i++) {
+            var it = list[i];
+            if (!it || typeof it.sel !== 'string' || typeof it.when !== 'function') return null;
+            if (it.sel.indexOf('[data-name="player"]') >= 0) continue;
+            if (it.sel.indexOf('player_torrent') >= 0) it = { sel: it.sel, when: function () { return !lsOn('bs_torrents', true); } };
+            out.push(it);
+        }
+        return out;
     }
     /** Подставить разобранное вместо встроенной копии. Раздел «Обновление» — свой (у плагина своя версия). */
     function applyLoader(p) {
-        if (!p) return false;
+        if (!checkParsed(p)) return false;
+        var hide = p.hideIf ? androidHideIf(p.hideIf) : null;
         SECTIONS = p.sections;
         LAYOUT = p.layout;
         HIDDEN = p.hidden.concat(ANDROID_HIDDEN.filter(function (n) { return p.hidden.indexOf(n) < 0; }));
         NEEDS = p.needs;
         if (p.modules.length >= 3) MODULES = p.modules;
+        if (p.pin) PIN_SECTIONS = p.pin;
+        if (hide) HIDE_IF = hide;
         SA.layoutFrom = SA.samsung;
         return true;
     }
-    /** cb() — когда раскладка готова: из кэша той же версии, из loader.js (до 8 с) или встроенная. */
+    /** cb() — когда раскладка готова: из памяти той же версии, из loader.js (до 8 с) или встроенная.
+     *  В памяти — только разобранное (несколько КБ), не весь loader.js. */
     function loadLayout(cb) {
         var v = SA.samsung, key = 'sa_layout', done = false;
         var fin = function () { if (!done) { done = true; cb(); } };
         if (!/^\d+\.\d+\.\d+$/.test(String(v || ''))) return fin();
         try {
             var c = JSON.parse(lsGet(key) || 'null');
-            if (c && c.v === v && applyLoader(parseLoader(c.src))) return fin();
+            if (c && c.v === v && applyLoader(c.p)) return fin();
         } catch (e) {}
         var mirrors = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/'];
         setTimeout(fin, 8000);
@@ -416,8 +444,8 @@
                     if (done) return;
                     var p = x.status === 200 ? parseLoader(x.responseText) : null;
                     if (!p) return next(i + 1);
+                    lsSet(key, JSON.stringify({ v: v, p: p }));
                     applyLoader(p);
-                    lsSet(key, JSON.stringify({ v: v, src: x.responseText }));
                     fin();
                 };
                 x.onerror = x.ontimeout = function () { next(i + 1); };
@@ -448,8 +476,8 @@
     }, 300);
 
     SA._test = {
-        get: function () { return { LAYOUT: LAYOUT, HIDDEN: HIDDEN, NEEDS: NEEDS, SECTIONS: SECTIONS, MODULES: MODULES }; },
+        get: function () { return { LAYOUT: LAYOUT, HIDDEN: HIDDEN, NEEDS: NEEDS, SECTIONS: SECTIONS, MODULES: MODULES, PIN: PIN_SECTIONS, HIDE_IF: HIDE_IF }; },
         LAYOUT: LAYOUT, HIDDEN: HIDDEN, HIDE_IF: HIDE_IF, SECTIONS: SECTIONS, MODULES: MODULES, place: place,
-        parseLoader: parseLoader, applyLoader: applyLoader
+        parseLoader: parseLoader, applyLoader: applyLoader, hide: function () { return HIDE_IF; }, pin: function () { return PIN_SECTIONS; }
     };
 })();
