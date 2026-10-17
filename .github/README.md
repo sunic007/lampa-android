@@ -3,7 +3,7 @@
 <p align="center"><b>Sunic Apps</b> features for <b>Lampa on Android</b> — phone, tablet, Android TV and boxes.<br>Telegram bot, «continue where you left off», player watchdog and automatic source choice — as a plugin, no separate app.</p>
 
 <p align="center">
-<a href="https://github.com/sunic007/lampa-android/releases/latest"><img src="https://img.shields.io/github/v/release/sunic007/lampa-android?style=flat-square&label=release&color=2f81f7" alt="release"></a>
+<a href="https://github.com/sunic007/lampa-android/tags"><img src="https://img.shields.io/github/v/tag/sunic007/lampa-android?style=flat-square&label=version&color=2f81f7" alt="version"></a>
 <picture><img src="https://img.shields.io/badge/Lampa-plugin-3ddc84?style=flat-square&logo=android&logoColor=white" alt="Lampa plugin"></picture>
 <picture><img src="https://img.shields.io/badge/Telegram-bot-26a5e4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram bot"></picture>
 <a href="https://t.me/sunicapps"><img src="https://img.shields.io/badge/Telegram-help-26a5e4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
@@ -33,7 +33,7 @@ https://sunic007.github.io/lampa-android/sunic.js
 
 4. Restart Lampa. Settings get a <b>«Sunic Apps»</b> section, right under «Синхронизация» (Sync).
 
-From then on the plugin updates itself from GitHub. When a new version is out, Lampa shows «Вышло обновление» (Update available) and installs it on the next start.
+From then on the plugin updates itself from GitHub: a new version is installed on the next Lampa start. To update right away — Settings → Sunic Apps → «Обновление» → «Проверить и обновить».
 
 </div>
 

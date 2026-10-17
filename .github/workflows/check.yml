@@ -35,4 +35,4 @@ jobs:
 
       # version.json и PIN загрузчика совпадают с тем, что записал бы tools/bump.py
       - name: Release files are up to date
-        run: python tools/bump.py && git diff --exit-code version.json docs/sunic.js
+        run: python tools/bump.py && git diff --exit-code version.json docs/sunic.js .github/CHANGELOG.md

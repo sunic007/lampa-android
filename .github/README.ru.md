@@ -3,7 +3,7 @@
 <p align="center">Функции <b>Sunic Apps</b> для <b>Lampa на Android</b> — телефон, планшет, Android TV и приставки.<br>Telegram-бот, «Продолжить с места», сторож плеера и автоподбор источников — плагином, без отдельного приложения.</p>
 
 <p align="center">
-<a href="https://github.com/sunic007/lampa-android/releases/latest"><img src="https://img.shields.io/github/v/release/sunic007/lampa-android?style=flat-square&label=release&color=2f81f7" alt="release"></a>
+<a href="https://github.com/sunic007/lampa-android/tags"><img src="https://img.shields.io/github/v/tag/sunic007/lampa-android?style=flat-square&label=version&color=2f81f7" alt="version"></a>
 <picture><img src="https://img.shields.io/badge/Lampa-plugin-3ddc84?style=flat-square&logo=android&logoColor=white" alt="Lampa plugin"></picture>
 <picture><img src="https://img.shields.io/badge/Telegram-bot-26a5e4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram bot"></picture>
 <a href="https://t.me/sunicapps"><img src="https://img.shields.io/badge/Telegram-help-26a5e4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
@@ -33,7 +33,7 @@ https://sunic007.github.io/lampa-android/sunic.js
 
 4. Перезапустите Lampa. В настройках появится раздел <b>«Sunic Apps»</b> — сразу под «Синхронизацией».
 
-Дальше плагин обновляется сам с GitHub. Когда выходит новая версия, Lampa показывает окно «Вышло обновление» и ставит её при следующем запуске.
+Дальше плагин обновляется сам с GitHub: новая версия ставится при следующем запуске Lampa. Сразу — Настройки → Sunic Apps → «Обновление» → «Проверить и обновить».
 
 </div>
 
