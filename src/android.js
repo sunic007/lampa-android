@@ -61,16 +61,16 @@
 
     var ROOT = 'bs_apps';
     var SECTIONS = [                                              // [раздел, название, подсказка]
-        ['bs_player', 'Плеер', 'Надёжность воспроизведения, продолжение, сон'],
+        ['bs_player', 'Плеер', 'Надёжность воспроизведения, продолжение, сон, громкость'],
         ['bs_online', 'Онлайн-источники', 'Источники фильмов и серверы Skaz'],
         ['bs_telegram', 'Telegram-бот', 'Управление Lampa с телефона'],
         ['bs_iface', 'Интерфейс', 'Кнопки на карточке, строки и меню'],
-        ['bs_update', 'Обновление', 'Версия и автообновление']
+        ['bs_update', 'Обновление', 'Версии и автообновление']
     ];
     var LAYOUT = [
         ['bs_player', ['#Надёжность воспроизведения', 'bs_player_auto', 'bs_guard', 'bs_bw_quality', 'bs_buffer',
             '#Во время просмотра', 'bs_resume_ask', 'bs_noads', 'bs_segments', 'bs_track_memory', 'bs_next_countdown', 'bs_still', 'bs_sleep', 'bs_vol_memory', 'bs_vol_night']],
-        ['bs_iface', ['bs_watch_btn', 'bs_online_resume', 'bs_ru_auto', 'bs_menu_turk', 'bs_continue_row']],
+        ['bs_iface', ['bs_watch_btn', 'bs_online_resume', 'bs_ru_auto', 'bs_menu_turk', 'bs_menu_kids', 'bs_continue_row']],
         ['bs_telegram', ['#Подключение', 'bs_tg_phone', 'bs_tg_join', 'bs_tg_help', 'bs_tg_token', 'bs_tg_link', 'bs_tv_name', 'bs_tg_off',
             '#Бот', 'bs_tg_on', 'bs_tg_shots', 'bs_search_qr', 'bs_tg_check',
             '#Люди и доступ', 'bs_tg_approve', 'bs_tg_guest_play', 'bs_tg_invite_reset']],
@@ -80,7 +80,9 @@
     // как на ТВ (служебное и отладка) + только для Samsung: AVPlay, реклама (решает приложение)
     var HIDDEN = ['bs_feat_title', 'bs_cont_title', 'bs_keys_info', 'bs_fast_start', 'bs_diag', 'bs_src_badge',
         'bs_player_auto', 'bs_buffer', 'bs_noads'];
-    var NEEDS = { bs_race: { on: 'bs_auto_source' } };
+    var NEEDS = { bs_player_auto: { on: 'bs_guard' }, bs_race: { on: 'bs_auto_source' } };
+    // только для Samsung: AVPlay (запасной плеер, буфер), реклама (решает приложение)
+    var ANDROID_HIDDEN = ['bs_player_auto', 'bs_buffer', 'bs_noads'];
     var HIDE_IF = [
         // торренты на Android — обычное дело: по умолчанию видны; выключили — прячем, как на ТВ
         { sel: '[data-name="player_torrent"], .settings-folder[data-component="parser"], .settings-folder[data-component="server"]',
@@ -336,6 +338,93 @@
 
     // Порядок — как в loader.js пакета; BSHub и BSVolume — только для Samsung, сюда не грузятся
     var MODULES = ['BSSkaz', 'BSGuard', 'BSFeatures', 'BSPlayer', 'BSRch', 'BSFix', 'BSSources', 'BSMenu', 'BSContinue', 'BSWatch', 'BSTelegram'];
+    var SAMSUNG_ONLY_MODULES = { BSHub: 1, BSVolume: 1 };
+
+    /* ---------- раскладка из loader.js той же версии Lampa для Samsung ----------
+     * Выше — встроенная копия на случай, когда loader.js не пришёл. Обычно раздел, порядок пунктов, скрытые пункты,
+     * зависимости и порядок запуска модулей берутся из loader.js выпуска, модули которого сейчас загружены, —
+     * поэтому новая настройка в .wgt появляется и здесь без выпуска плагина. */
+
+    /** Литерал после «var NAME =» — до парной скобки (строки и комментарии пропускаются). */
+    function literal(src, name) {
+        var m = new RegExp('\\bvar\\s+' + name + '\\s*=\\s*').exec(src);
+        if (!m) return null;
+        var i = m.index + m[0].length, open = src.charAt(i), close = open === '[' ? ']' : open === '{' ? '}' : '';
+        if (!close) return null;
+        var depth = 0, q = '';
+        for (var j = i; j < src.length; j++) {
+            var c = src.charAt(j);
+            if (q) { if (c === '\\') j++; else if (c === q) q = ''; continue; }
+            if (c === '"' || c === "'") { q = c; continue; }
+            if (c === '/' && src.charAt(j + 1) === '/') { var nl = src.indexOf('\n', j); if (nl < 0) return null; j = nl; continue; }
+            if (c === '/' && src.charAt(j + 1) === '*') { var e = src.indexOf('*/', j + 2); if (e < 0) return null; j = e + 1; continue; }
+            if (c === open) depth++;
+            else if (c === close && --depth === 0) return src.slice(i, j + 1);
+        }
+        return null;
+    }
+    function value(src, name) {
+        var lit = literal(src, name);
+        if (!lit) return null;
+        try { return new Function('return ' + lit)(); } catch (e) { return null; }    // eslint-disable-line no-new-func
+    }
+    function isArr(a) { return Object.prototype.toString.call(a) === '[object Array]'; }
+    function strs(a) { return isArr(a) && a.every(function (x) { return typeof x === 'string'; }); }
+
+    /** Разбор loader.js: { sections, layout, hidden, needs, modules } или null, если что-то не так. */
+    function parseLoader(src) {
+        src = String(src || '');
+        var sections = value(src, 'BS_SECTIONS'), layout = value(src, 'BS_SETTINGS_LAYOUT'),
+            hidden = value(src, 'BS_SETTINGS_HIDDEN'), needs = value(src, 'BS_SETTINGS_NEEDS');
+        if (!isArr(sections) || !sections.length || !sections.every(function (s) { return strs(s) && s.length >= 2; })) return null;
+        if (!isArr(layout) || !layout.length || !layout.every(function (l) { return isArr(l) && typeof l[0] === 'string' && strs(l[1]); })) return null;
+        if (!strs(hidden)) return null;
+        if (!needs || typeof needs !== 'object' || isArr(needs)) needs = {};
+        var order = [], re = /\btry\s*\{\s*(BS\w+)\.start\(\)/g, m;
+        while ((m = re.exec(src))) if (!SAMSUNG_ONLY_MODULES[m[1]] && order.indexOf(m[1]) < 0) order.push(m[1]);
+        return { sections: sections, layout: layout, hidden: hidden, needs: needs, modules: order };
+    }
+    /** Подставить разобранное вместо встроенной копии. Раздел «Обновление» — свой (у плагина своя версия). */
+    function applyLoader(p) {
+        if (!p) return false;
+        SECTIONS = p.sections;
+        LAYOUT = p.layout;
+        HIDDEN = p.hidden.concat(ANDROID_HIDDEN.filter(function (n) { return p.hidden.indexOf(n) < 0; }));
+        NEEDS = p.needs;
+        if (p.modules.length >= 3) MODULES = p.modules;
+        SA.layoutFrom = SA.samsung;
+        return true;
+    }
+    /** cb() — когда раскладка готова: из кэша той же версии, из loader.js (до 8 с) или встроенная. */
+    function loadLayout(cb) {
+        var v = SA.samsung, key = 'sa_layout', done = false;
+        var fin = function () { if (!done) { done = true; cb(); } };
+        if (!/^\d+\.\d+\.\d+$/.test(String(v || ''))) return fin();
+        try {
+            var c = JSON.parse(lsGet(key) || 'null');
+            if (c && c.v === v && applyLoader(parseLoader(c.src))) return fin();
+        } catch (e) {}
+        var mirrors = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/'];
+        setTimeout(fin, 8000);
+        (function next(i) {
+            if (i >= mirrors.length || done) return fin();
+            try {
+                var x = new XMLHttpRequest();
+                x.open('GET', mirrors[i] + 'sunic007/lampa-samsung@v' + v + '/src/loader.js', true);
+                x.timeout = 6000;
+                x.onload = function () {
+                    if (done) return;
+                    var p = x.status === 200 ? parseLoader(x.responseText) : null;
+                    if (!p) return next(i + 1);
+                    applyLoader(p);
+                    lsSet(key, JSON.stringify({ v: v, src: x.responseText }));
+                    fin();
+                };
+                x.onerror = x.ontimeout = function () { next(i + 1); };
+                x.send();
+            } catch (e) { next(i + 1); }
+        })(0);
+    }
 
     function startAll() {
         try { keepOursOnCacheClear(Lampa.Storage); } catch (e) {}
@@ -350,11 +439,17 @@
 
     // серверы Skaz: на ТВ быстрый замер идёт до запуска Lampa; здесь Lampa уже идёт — замер и сразу дальше
     try { if (window.BSSkaz && BSSkaz.prepare) BSSkaz.prepare(function () {}); } catch (e) {}
+    var layoutReady = false;
+    loadLayout(function () { layoutReady = true; });
     var timer = setInterval(function () {
-        if (!window.appready || !window.Lampa) return;
+        if (!layoutReady || !window.appready || !window.Lampa) return;
         clearInterval(timer);
         startAll();
     }, 300);
 
-    SA._test = { LAYOUT: LAYOUT, HIDDEN: HIDDEN, HIDE_IF: HIDE_IF, SECTIONS: SECTIONS, MODULES: MODULES, place: place };
+    SA._test = {
+        get: function () { return { LAYOUT: LAYOUT, HIDDEN: HIDDEN, NEEDS: NEEDS, SECTIONS: SECTIONS, MODULES: MODULES }; },
+        LAYOUT: LAYOUT, HIDDEN: HIDDEN, HIDE_IF: HIDE_IF, SECTIONS: SECTIONS, MODULES: MODULES, place: place,
+        parseLoader: parseLoader, applyLoader: applyLoader
+    };
 })();

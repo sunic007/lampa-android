@@ -5,7 +5,7 @@
     python tools/bump.py minor           # 1.0.1 → 1.1.0
     python tools/bump.py --samsung 2.1.2 # перейти на модули другой ВЫПУЩЕННОЙ версии Lampa для Samsung
 
-Список модулей берётся из version.json пакета Samsung по тегу v<samsung> (raw.githubusercontent), без loader.js
+Запасной список модулей (плагин сам берёт последний выпуск; этот — когда GitHub недоступен) — из version.json пакета Samsung по тегу v<samsung> (raw.githubusercontent), без loader.js
 (его заменяет src/android.js) и без модулей только для Samsung (bshub, bsvolume). Потом — автотесты; не прошли — стоп.
 """
 import io, json, os, re, subprocess, sys, urllib.request

@@ -56,7 +56,9 @@ Shundan keyin plagin GitHub'dan o'zi yangilanadi. Yangi versiya chiqsa, Lampa «
 - <b>Pleer qo'riqchisi</b>: video qotib qolsa — qayta ishga tushirish, boshqa sifat yoki boshqa manba.
 - <b>Ko'rish paytida</b>: kirish va titrlarni o'tkazib yuborish, «Keyingi qism» sanog'i, «Hali ko'ryapsizmi?», uyqu taymeri, audio yo'lakni eslab qolish.
 - <b>Manbalar</b>: manbani avtomatik tanlash, oldindan tekshirish, Skaz serverlarini tanlash, tanlash uchun boshqa onlayn manbalar.
-- <b>Interfeys</b>: kartochkada bitta «Смотреть» tugmasi, menyuda «Турецкие сериалы» (Turk seriallari), ishga tushganda «Новые серии» (Yangi qismlar).
+- <b>Interfeys</b>: kartochkada bitta «Смотреть» tugmasi, menyuda «Турецкие сериалы» (Turk seriallari) va «Мультики» (Multfilmlar), ishga tushganda «Новые серии» (Yangi qismlar).
+
+Samsung uchun Lampa'ning yangi versiyasi chiqsa — keyingi ishga tushirishda xuddi shu imkoniyatlar va sozlamalar bu yerda ham o'zi paydo bo'ladi.
 
 </div>
 

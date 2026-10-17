@@ -56,7 +56,9 @@ The same features as <a href="https://github.com/sunic007/lampa-samsung">Lampa f
 - <b>Player watchdog</b>: a stuck video is restarted, switched to another quality or another source.
 - <b>While watching</b>: skip intro and credits, «Next episode» countdown, «Are you still watching?», sleep timer, remembered audio track.
 - <b>Sources</b>: automatic source choice, checking sources in advance, Skaz server choice, other online sources to pick from.
-- <b>Interface</b>: one «Смотреть» (Watch) button on the card, «Турецкие сериалы» (Turkish series) in the menu, «Новые серии» (New episodes) on start.
+- <b>Interface</b>: one «Смотреть» (Watch) button on the card, «Турецкие сериалы» (Turkish series) and «Мультики» (Cartoons) in the menu, «Новые серии» (New episodes) on start.
+
+When a new Lampa for Samsung release comes out, the same features and the same settings appear here on the next start, by themselves.
 
 </div>
 

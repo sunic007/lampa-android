@@ -3,16 +3,16 @@
  *
  * Подключение: Lampa → Настройки → Расширения → Добавить плагин → https://sunic007.github.io/lampa-android/sunic.js
  *
- * Этот файл — только загрузчик, он почти не меняется. Что грузить, говорит version.json этого репозитория:
- *  - модули Sunic Apps — те же файлы, что в Lampa для Samsung (бот, сторож плеера, «Продолжить с места», источники,
- *    меню) — с jsDelivr из sunic007/lampa-samsung по тегу ВЫПУЩЕННОЙ версии (samsung). Пакет .wgt и ТВ плагин не
- *    трогает и от их выпусков не зависит: на новую версию модулей он переходит, только когда она записана здесь;
- *  - src/android.js этого репозитория (sunic007/lampa-android по тегу версии плагина) — настройки «Sunic Apps» и запуск
- *    модулей. Он — вместо loader.js пакета: ядро Lampa уже загрузило само приложение.
+ * Этот файл — только загрузчик, он почти не меняется. Функции — те же, что в Lampa для Samsung, и ВСЕГДА её последней
+ * выпущенной версии: при каждом запуске плагин смотрит version.json пакета (sunic007/lampa-samsung) и берёт модули с
+ * jsDelivr по тегу этой версии (бот, сторож плеера, «Продолжить с места», источники, меню). Вышла новая Lampa для Samsung —
+ * на Android она приходит сама, отдельно выпускать плагин не нужно.
+ *  - src/android.js этого репозитория — запуск модулей и раздел «Sunic Apps»; раскладку настроек он берёт из loader.js
+ *    той же версии пакета, поэтому новые пункты встают на свои места сами;
+ *  - модули только для Samsung (bshub — Smart Hub, bsvolume — громкость ТВ) и loader.js (грузит ядро Lampa) не грузятся.
  *
- * Обновление: version.json на GitHub новее — проверяем, что все файлы уже есть на CDN, запоминаем (sa_upd); ставится
- * при следующем запуске Lampa (окно «Вышло обновление» — в android.js). Lampa на какой-то версии не поднялась —
- * версия плохая на сутки, работает прошлая. Плагин грузится после страницы — теги вставляются по одному, по порядку.
+ * Защита: Lampa не поднялась на новой версии модулей — версия плохая на сутки, работает прошлая. GitHub недоступен —
+ * последняя проверенная (или записанная здесь, PIN). Плагин грузится после страницы — теги вставляются по одному, по порядку.
  * ES5: старые Android TV со старым WebView.
  */
 (function () {
@@ -21,42 +21,73 @@
 
     var PLUGIN_URL = 'https://sunic007.github.io/lampa-android/sunic.js';
     var MANIFEST = 'https://raw.githubusercontent.com/sunic007/lampa-android/main/version.json';
+    var SAMSUNG = 'https://raw.githubusercontent.com/sunic007/lampa-samsung/main/version.json';
     var MIRRORS = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/'];
-    // что грузить, если GitHub недоступен и ничего не запомнено; tools/bump.py вписывает сюда выпуск из version.json
-    var PIN = { version: '1.0.0', samsung: '2.1.1', modules: ['skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
+    // на случай, когда GitHub недоступен и ничего не запомнено; tools/bump.py вписывает сюда выпуск из version.json
+    var PIN = { version: '1.0.1', samsung: '2.2.1', modules: ['skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
+    // не для Android: loader.js грузит ядро Lampa (его заменяет src/android.js), update.js/polyfills.js — для Tizen,
+    // bshub.js — панель Smart Hub, bsvolume.js — громкость через tizen.tvaudiocontrol
+    var SAMSUNG_ONLY = { 'loader.js': 1, 'update.js': 1, 'polyfills.js': 1, 'bshub.js': 1, 'bsvolume.js': 1 };
 
     function get(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
     function set(k, v) { try { if (v === null) window.localStorage.removeItem(k); else window.localStorage.setItem(k, v); } catch (e) {} }
+    function json(k) { try { return JSON.parse(get(k) || 'null'); } catch (e) { return null; } }
     function num(v) { var m = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(v || '')); return m ? +m[1] * 1e6 + +m[2] * 1e3 + +m[3] : 0; }
-    function okName(f) { return /^[\w.-]+\.js$/.test(f) && f !== 'loader.js' && f !== 'update.js'; }
-    /** Выпуск из version.json или памяти: версии в порядке, модули — только имена файлов. */
-    function okRelease(r) {
-        return !!r && num(r.version) > 0 && num(r.samsung) > 0 && Object.prototype.toString.call(r.modules) === '[object Array]' &&
-            r.modules.length > 0 && r.modules.every(okName);
-    }
+    function isArr(a) { return Object.prototype.toString.call(a) === '[object Array]'; }
+    function okName(f) { return /^[\w.-]+\.js$/.test(f) && !SAMSUNG_ONLY[f]; }
+    function okMods(l) { return isArr(l) && l.length > 0 && l.every(okName); }
+    function onlyAndroid(files) { return isArr(files) ? files.filter(function (f) { return /^[\w.-]+\.js$/.test(f) && !SAMSUNG_ONLY[f]; }) : []; }
     function log() { try { console.log.apply(console, ['Sunic Apps'].concat([].slice.call(arguments))); } catch (e) {} }
     function noty(text, time) { try { Lampa.Noty.show(text, { time: time || 5000 }); } catch (e) { log(text); } }
-    function bad() {
-        var raw = String(get('sa_upd_bad') || ''), at = +(raw.split('|')[1] || 0);
+    /** Версия, на которой Lampa не поднялась (ключ sa_upd_bad или sa_sam_bad: «версия|время»), — плохая сутки. */
+    function bad(key) {
+        var raw = String(get(key) || ''), at = +(raw.split('|')[1] || 0);
         return raw && (!at || Date.now() - at < 86400000) ? raw.split('|')[0] : '';
     }
-
-    /* ---------- какой выпуск грузить ---------- */
-
-    function pick() {
-        var upd = null;
-        try { upd = JSON.parse(get('sa_upd') || 'null'); } catch (e) {}
-        var good = okRelease(upd) && upd.ok;
-        // прошлый запуск с этой версией до готовности Lampa не дошёл — версия плохая на сутки
-        if (good && get('sa_upd_try') === upd.version) set('sa_upd_bad', upd.version + '|' + Date.now());
-        if (good && upd.version !== bad() && num(upd.version) >= num(PIN.version)) {
-            var m = +upd.m;
-            return { version: upd.version, samsung: upd.samsung, modules: upd.modules, mirror: m >= 0 && m < MIRRORS.length ? m : 0 };
-        }
-        return { version: PIN.version, samsung: PIN.samsung, modules: PIN.modules, mirror: 0 };
+    function xhr(url, timeout, cb) {
+        var done = false, fin = function (st, text) { if (!done) { done = true; cb(st, text); } };
+        try {
+            var x = new XMLHttpRequest();
+            x.open('GET', url, true);
+            x.timeout = timeout;
+            x.onload = function () { fin(x.status, x.responseText); };
+            x.onerror = x.ontimeout = function () { fin(0, ''); };
+            x.send();
+        } catch (e) { fin(0, ''); }
+        setTimeout(function () { fin(0, ''); }, timeout + 500);
     }
 
-    /** Все адреса выпуска по порядку: модули Samsung, android.js последним; css отдельно. */
+    /* ---------- какие версии грузить ---------- */
+
+    /** Версия плагина (src/android.js): проверенная новая (sa_upd) или PIN. */
+    function pickPlugin() {
+        var upd = json('sa_upd');
+        if (upd && upd.ok && num(upd.version) > num(PIN.version) && upd.version !== bad('sa_upd_bad')) {
+            var m = +upd.m;
+            return { version: upd.version, notes: upd.notes || null, mirror: m >= 0 && m < MIRRORS.length ? m : 0, min: upd.samsung };
+        }
+        return { version: PIN.version, mirror: 0, min: PIN.samsung };
+    }
+    /** Модули Samsung, на которые можно откатиться без сети: последняя удачная версия (sa_sam) или PIN. */
+    function savedSamsung(min) {
+        var s = json('sa_sam');
+        if (s && num(s.v) >= num(min) && okMods(s.modules) && s.v !== bad('sa_sam_bad')) return { v: s.v, modules: s.modules };
+        return { v: PIN.samsung, modules: PIN.modules };
+    }
+    /** Последняя выпущенная Lampa для Samsung (version.json пакета) — сразу при запуске, до 4 с; нет ответа — сохранённая. */
+    function pickSamsung(min, cb) {
+        var keep = savedSamsung(min);
+        if (get('sa_gh_update') === 'false') return cb(keep, keep);
+        xhr(SAMSUNG + '?t=' + Date.now(), 4000, function (st, text) {
+            var m = null;
+            try { m = JSON.parse(text); } catch (e) {}
+            var mods = m ? onlyAndroid(m.files) : [];
+            if (st !== 200 || !m || !num(m.version) || !mods.length || m.version === bad('sa_sam_bad') || num(m.version) < num(keep.v)) return cb(keep, keep);
+            cb({ v: m.version, modules: mods, notes: m.notes || null }, keep);
+        });
+    }
+
+    /** Все адреса по порядку: модули Samsung, android.js последним; css отдельно. */
     function urls(r, mirror) {
         var sam = MIRRORS[mirror] + 'sunic007/lampa-samsung@v' + r.samsung + '/src/';
         var list = r.modules.map(function (f) { return sam + f; });
@@ -66,9 +97,9 @@
 
     /* ---------- загрузка ---------- */
 
-    /** Файлы по одному, по порядку. Файл не пришёл с зеркала — тот же со следующего; ни с одного — cb(false). */
+    /** Файлы по одному, по порядку. Файл не пришёл с зеркала — тот же со следующего; ни с одного — cb(false, на чём). */
     function loadAll(r, cb) {
-        var i = 0;
+        var i = 0, all0 = urls(r, 0).js;
         function one(m, tries) {
             var all = urls(r, m).js;
             if (i >= all.length) return cb(true);
@@ -79,7 +110,7 @@
                 done = true;
                 clearTimeout(timer);
                 if (s.parentNode) s.parentNode.removeChild(s);
-                if (tries + 1 >= MIRRORS.length) return cb(false);
+                if (tries + 1 >= MIRRORS.length) return cb(false, i < all0.length - 1 ? 'samsung' : 'plugin');
                 one((m + 1) % MIRRORS.length, tries + 1);
             }
             s.type = 'text/javascript';
@@ -104,7 +135,7 @@
         one(r.mirror, 0);
     }
 
-    /* ---------- проверка новой версии ---------- */
+    /* ---------- проверка новой версии плагина (src/android.js) ---------- */
 
     var running = null;
 
@@ -129,31 +160,25 @@
         })(0);
     }
 
-    /** cb(версия | '', выпуск): версия — только если она новее запущенной и все её файлы уже есть на CDN. */
+    /** cb(версия | '', выпуск): новая версия плагина — только если она новее запущенной и её файлы уже есть на CDN.
+     *  Модули Samsung проверять не нужно: их последняя версия берётся при каждом запуске. */
     function check(cb) {
         var fin = function (v, r) { if (!cb) return; var c = cb; cb = null; c(v || '', r || null); };
         if (get('sa_gh_update') === 'false') return fin('');
-        try {
-            var x = new XMLHttpRequest();
-            x.open('GET', MANIFEST + '?t=' + Date.now(), true);
-            x.timeout = 15000;
-            x.onload = function () {
-                var r = null;
-                try { r = JSON.parse(x.responseText); } catch (e) {}
-                if (x.status !== 200 || !okRelease(r)) return fin('');
-                if (num(r.version) <= num(running && running.version) || r.version === bad()) return fin('');
-                var upd = null;
-                try { upd = JSON.parse(get('sa_upd') || 'null'); } catch (e) {}
-                if (upd && upd.version === r.version && upd.ok) return fin(r.version, r);   // уже проверена
-                verify(r, function (m) {
-                    if (m < 0) return fin('');                                            // CDN ещё не готов — в следующий раз
-                    set('sa_upd', JSON.stringify({ version: r.version, samsung: r.samsung, modules: r.modules, notes: r.notes || null, m: m, ok: 1 }));
-                    fin(r.version, r);
-                });
-            };
-            x.onerror = x.ontimeout = function () { fin(''); };
-            x.send();
-        } catch (e) { fin(''); }
+        xhr(MANIFEST + '?t=' + Date.now(), 15000, function (st, text) {
+            var r = null;
+            try { r = JSON.parse(text); } catch (e) {}
+            if (st !== 200 || !r || !num(r.version)) return fin('');
+            if (num(r.version) <= num(running && running.version) || r.version === bad('sa_upd_bad')) return fin('');
+            var upd = json('sa_upd');
+            if (upd && upd.version === r.version && upd.ok) return fin(r.version, r);   // уже проверена
+            var probe = { version: r.version, samsung: running.samsung, modules: running.modules };
+            verify(probe, function (m) {
+                if (m < 0) return fin('');                                            // CDN ещё не готов — в следующий раз
+                set('sa_upd', JSON.stringify({ version: r.version, samsung: r.samsung, notes: r.notes || null, m: m, ok: 1 }));
+                fin(r.version, r);
+            });
+        });
     }
 
     /** Согласились обновить: версия, на которой раньше не поднялась, получает ещё шанс. */
@@ -179,26 +204,46 @@
     /* ---------- запуск ---------- */
 
     function start() {
-        running = pick();
-        window.SunicAndroid = { version: running.version, samsung: running.samsung, check: check, allow: allow, _pick: pick, _num: num };
+        var plug = pickPlugin();
         window.BS_ANDROID = true;
-        window.BS_REMOTE_VERSION = running.samsung;             // бот сравнивает версии модулей с другими ТВ
+        window.SunicAndroid = { version: plug.version, samsung: '', check: check, allow: allow, _num: num };
         // Модули пакета Samsung без правок: «Пропускать рекламу» (personal1.lampa) на Android решает само приложение,
         // поэтому для модуля она включена (он тогда не трогает файл приложения); подсказка про меню Samsung — не нужна.
         set('bs_noads', 'true');
         set('bs_sleep_hint', '1');
-        set('sa_upd_try', running.version);
-        log('загружаю', running.version, '· модули ' + running.samsung);
-        loadAll(running, function (ok) {
+        set('sa_upd_try', null);                                // метка 1.0.0, теперь sa_try
+        pickSamsung(plug.min, function (sam, keep) { go(plug, sam, keep); });
+    }
+
+    function go(plug, sam, keep) {
+        running = { version: plug.version, samsung: sam.v, modules: sam.modules, mirror: plug.mirror };
+        window.SunicAndroid.samsung = sam.v;
+        window.BS_REMOTE_VERSION = sam.v;                       // бот сравнивает версии модулей с другими ТВ
+        var tryKey = plug.version + '/' + sam.v, prevTry = get('sa_try');
+        // прошлый запуск на этих версиях до готовности Lampa не дошёл — виновата новая: модули Samsung, иначе плагин
+        if (prevTry === tryKey) {
+            if (sam.v !== keep.v) { set('sa_sam_bad', sam.v + '|' + Date.now()); return go(plug, keep, keep); }
+            if (plug.version !== PIN.version) { set('sa_upd_bad', plug.version + '|' + Date.now()); set('sa_try', null); return start(); }
+        }
+        set('sa_try', tryKey);
+        log('загружаю', plug.version, '· модули Lampa для Samsung ' + sam.v);
+        loadAll(running, function (ok, where) {
             if (!ok) {
-                set('sa_upd_try', null);                        // сбой сети, а не плохая версия
+                set('sa_try', null);                            // сбой сети, а не плохая версия
+                if (where === 'samsung' && sam.v !== keep.v) return go(plug, keep, keep);   // новой версии ещё нет на CDN
                 noty('Sunic Apps: нет связи с GitHub — функции загрузятся при следующем запуске', 7000);
                 return;
             }
             var waits = 0, t = setInterval(function () {
                 if (window.appready && window.SunicAndroid.started) {
                     clearInterval(t);
-                    set('sa_upd_try', null);
+                    set('sa_try', null);
+                    var was = json('sa_sam');
+                    set('sa_sam', JSON.stringify({ v: sam.v, modules: sam.modules }));
+                    if (was && was.v && num(sam.v) > num(was.v)) {
+                        var n = sam.notes && sam.notes.title ? ' — ' + sam.notes.title : '';
+                        noty('Sunic Apps: функции обновлены до ' + sam.v + n, 7000);
+                    }
                     nameMe();
                     setTimeout(function () { check(); }, 20000);
                 } else if (++waits > 90) clearInterval(t);          // 3 минуты — try остаётся, следующий запуск — прошлая версия
