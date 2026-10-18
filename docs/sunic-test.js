@@ -219,7 +219,7 @@
             if (plug.version !== PIN.version) { set('sat_upd_bad', plug.version + '|' + Date.now()); set('sat_try', null); return start(); }
         }
         set('sat_try', tryKey + '|' + (fails + 1));
-        noty('Sunic Apps: тестовая сборка ' + TEST_VER, 4000);
+        noty('Sunic Apps: тестовая сборка ' + TEST_VER + ' (' + TEST_REF.slice(0, 7) + ')', 6000);
         log('загружаю', plug.version, '· модули Lampa для Samsung ' + sam.v);
         loadAll(running, function (ok, where) {
             if (!ok) {
