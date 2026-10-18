@@ -1,5 +1,5 @@
 /*
- * Sunic Apps для Lampa на Android — ТЕСТОВАЯ сборка (модули Lampa для Samsung из ветки test-2.3.3, коммит 7fa68e5).
+ * Sunic Apps для Lampa на Android — ТЕСТОВАЯ сборка (модули Lampa для Samsung из ветки test-2.3.3, коммит 8b1f5e9).
  * Только для проверки перед выпуском: подключать ВМЕСТО https://sunic007.github.io/lampa-android/sunic.js.
  * Обновлений не ищет, свои ключи хранит отдельно (sat_*), основной плагин после возврата работает как раньше.
  */
@@ -8,7 +8,7 @@
     if (window.SunicAndroid) return;                            // плагин добавили дважды
 
     var PLUGIN_URL = 'https://sunic007.github.io/lampa-android/sunic-test.js';
-    var TEST_REF = '7fa68e5a75843a14186e071a204a61aa26e29992', TEST_VER = '2.3.3';
+    var TEST_REF = '8b1f5e9e038c0854089c079370c7163ef1112398', TEST_VER = '2.3.3';
     var MANIFEST = 'https://raw.githubusercontent.com/sunic007/lampa-android/main/version.json';
     var SAMSUNG = 'https://raw.githubusercontent.com/sunic007/lampa-samsung/main/version.json';
     var MIRRORS = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/'];
