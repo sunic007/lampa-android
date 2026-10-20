@@ -24,7 +24,7 @@
     var SAMSUNG = 'https://raw.githubusercontent.com/sunic007/lampa-samsung/main/version.json';
     var MIRRORS = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/'];
     // на случай, когда GitHub недоступен и ничего не запомнено; tools/bump.py вписывает сюда выпуск из version.json
-    var PIN = { version: '2.3.4', samsung: '2.3.4', modules: ['bsreport.js', 'skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
+    var PIN = { version: '2.3.5', samsung: '2.3.5', modules: ['bsreport.js', 'skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
     // не для Android: loader.js грузит ядро Lampa (его заменяет src/android.js), update.js/polyfills.js — для Tizen,
     // bshub.js — панель Smart Hub, bsvolume.js — громкость через tizen.tvaudiocontrol
     var SAMSUNG_ONLY = { 'loader.js': 1, 'update.js': 1, 'polyfills.js': 1, 'bshub.js': 1, 'bsvolume.js': 1 };
