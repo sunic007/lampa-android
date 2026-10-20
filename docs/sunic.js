@@ -25,7 +25,7 @@
     // последний — свой хостинг (sunic.stream/gh/ — те же адреса): выручает, когда у человека закрыты GitHub и jsDelivr
     var MIRRORS = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/', 'https://sunic.stream/gh/'];
     // на случай, когда GitHub недоступен и ничего не запомнено; tools/bump.py вписывает сюда выпуск из version.json
-    var PIN = { version: '2.3.12', samsung: '2.3.12', modules: ['bsreport.js', 'skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
+    var PIN = { version: '2.3.13', samsung: '2.3.13', modules: ['bsreport.js', 'skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
     // не для Android: loader.js грузит ядро Lampa (его заменяет src/android.js), update.js/polyfills.js — для Tizen,
     // bshub.js — панель Smart Hub, bsvolume.js — громкость через tizen.tvaudiocontrol
     var SAMSUNG_ONLY = { 'loader.js': 1, 'update.js': 1, 'polyfills.js': 1, 'bshub.js': 1, 'bsvolume.js': 1 };
