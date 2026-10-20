@@ -11,7 +11,7 @@
 
 <p align="center"><a href="README.md"><img src="https://flagcdn.com/h60/gb.png" height="30" align="middle" alt=""> English</a>&nbsp;&nbsp;&nbsp;<a href="README.ru.md"><img src="https://flagcdn.com/h60/ru.png" height="30" align="middle" alt=""> Русский</a>&nbsp;&nbsp;&nbsp;<picture><img src="https://flagcdn.com/h60/uz.png" height="30" align="middle" alt=""></picture> <b>O'zbekcha</b></p>
 
-<p align="center"><sub>Bepul · Android 6+ · <a href="CHANGELOG.md">Yangiliklar</a> (RU) · <a href="../docs/DEVELOPMENT.md">Dasturchilar uchun</a> (RU)</sub></p>
+<p align="center"><sub>Bepul · <a href="https://sunic.stream">sunic.stream</a> · Android 6+ · <a href="CHANGELOG.md">Yangiliklar</a> (RU) · <a href="../docs/DEVELOPMENT.md">Dasturchilar uchun</a> (RU)</sub></p>
 
 <br clear="left">
 
@@ -26,10 +26,12 @@
 </div>
 
 ```
-https://sunic007.github.io/lampa-android/sunic.js
+https://sunic.stream/sunic.js
 ```
 
 <div align="justify">
+
+Eski manzil <code>https://sunic007.github.io/lampa-android/sunic.js</code> ham ishlayveradi.
 
 4. Lampa'ni qayta ishga tushiring. Sozlamalarda <b>«Sunic Apps»</b> bo'limi paydo bo'ladi — «Синхронизация» (Sinxronizatsiya) ostida.
 
@@ -44,6 +46,18 @@ Shundan keyin plagin GitHub'dan o'zi yangilanadi: yangi versiya Lampa keyingi is
   <picture><img src="../docs/screenshots/04.webp" width="24.4%" alt="Telegram-botni ulash"></picture>
 </p>
 
+## Qayerda ishlaydi
+
+<div align="justify">
+
+Sunic Apps bilan o'sha Lampa istalgan platformada ishlaydi — <a href="https://sunic.stream">sunic.stream</a>:
+
+- <b>Android</b> — televizor, pristavka, telefon: shu plagin, <code>https://sunic.stream/sunic.js</code> (yuqoriga qarang).
+- <b>Istalgan Smart TV</b> — Samsung, LG, Android TV va boshqalar — <b>Media Station X</b> ilovasi orqali: <b>Settings → Start Parameter → Setup</b> → <code>sunic.stream</code>. Dasturchi rejimi kerak emas.
+- <b>Brauzer</b> — <a href="https://sunic.stream/lampa/">sunic.stream/lampa</a>. Brauzerda Skaz manbalari ochilmaydi (Skaz serverlari faqat http'da, sahifa esa https'da); Online Mod va Z01 ishlaydi.
+- <b>Samsung Smart TV</b> — eng to'liq versiya: <a href="https://github.com/sunic007/lampa-samsung">Samsung uchun Lampa</a> ilovasi (televizor ovoz balandligini eslab qolish, Smart Hub paneli, ilovani yopadigan uyqu taymeri, televizor pleeri AVPlay).
+
+</div>
 
 ## Imkoniyatlar
 
@@ -78,7 +92,7 @@ Samsung uchun Lampa'ning yangi versiyasi chiqsa — keyingi ishga tushirishda xu
 <details>
 <summary><b>Kengaytmalarda 404 xatosi yoki «Не удалось проверить» (tekshirib bo'lmadi)</b></summary>
 <br>
-<div align="justify">Manzilni tekshiring — u aynan <code>https://sunic007.github.io/lampa-android/sunic.js</code> bo'lishi kerak. «Tekshirib bo'lmadi» internet sekin bo'lganda chiqadi: Lampa'ni qayta ishga tushiring — plagin yuklangan bo'lsa, «Sunic Apps» bo'limi paydo bo'ladi.</div>
+<div align="justify">Manzilni tekshiring — u aynan <code>https://sunic.stream/sunic.js</code> (yoki eski <code>https://sunic007.github.io/lampa-android/sunic.js</code>) bo'lishi kerak. «Tekshirib bo'lmadi» internet sekin bo'lganda chiqadi: Lampa'ni qayta ishga tushiring — plagin yuklangan bo'lsa, «Sunic Apps» bo'limi paydo bo'ladi.</div>
 </details>
 
 <details>

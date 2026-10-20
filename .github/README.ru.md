@@ -11,7 +11,7 @@
 
 <p align="center"><a href="README.md"><img src="https://flagcdn.com/h60/gb.png" height="30" align="middle" alt=""> English</a>&nbsp;&nbsp;&nbsp;<picture><img src="https://flagcdn.com/h60/ru.png" height="30" align="middle" alt=""></picture> <b>Русский</b>&nbsp;&nbsp;&nbsp;<a href="README.uz.md"><img src="https://flagcdn.com/h60/uz.png" height="30" align="middle" alt=""> O'zbekcha</a></p>
 
-<p align="center"><sub>Бесплатно · Android 6+ · <a href="CHANGELOG.md">Что нового</a> · <a href="../docs/DEVELOPMENT.md">Для разработчиков</a></sub></p>
+<p align="center"><sub>Бесплатно · <a href="https://sunic.stream">sunic.stream</a> · Android 6+ · <a href="CHANGELOG.md">Что нового</a> · <a href="../docs/DEVELOPMENT.md">Для разработчиков</a></sub></p>
 
 <br clear="left">
 
@@ -26,10 +26,12 @@
 </div>
 
 ```
-https://sunic007.github.io/lampa-android/sunic.js
+https://sunic.stream/sunic.js
 ```
 
 <div align="justify">
+
+Старый адрес <code>https://sunic007.github.io/lampa-android/sunic.js</code> тоже работает.
 
 4. Перезапустите Lampa. В настройках появится раздел <b>«Sunic Apps»</b> — сразу под «Синхронизацией».
 
@@ -44,6 +46,18 @@ https://sunic007.github.io/lampa-android/sunic.js
   <picture><img src="../docs/screenshots/04.webp" width="24.4%" alt="Подключение Telegram-бота"></picture>
 </p>
 
+## Где работает
+
+<div align="justify">
+
+Та же Lampa с Sunic Apps работает на любой платформе — <a href="https://sunic.stream">sunic.stream</a>:
+
+- <b>Android</b> — ТВ, приставки, телефоны: этот плагин, <code>https://sunic.stream/sunic.js</code> (см. выше).
+- <b>Любой Smart TV</b> — Samsung, LG, Android TV и другие — через приложение <b>Media Station X</b>: <b>Settings → Start Parameter → Setup</b> → <code>sunic.stream</code>. Без режима разработчика.
+- <b>Браузер</b> — <a href="https://sunic.stream/lampa/">sunic.stream/lampa</a>. В браузере источники Skaz не открываются (их серверы работают только по http, а страница — по https); Online Mod и Z01 работают.
+- <b>Samsung Smart TV</b> — самая полная версия: приложение <a href="https://github.com/sunic007/lampa-samsung">Lampa для Samsung</a> (память громкости ТВ, панель Smart Hub, сон с закрытием приложения, плеер ТВ AVPlay).
+
+</div>
 
 ## Возможности
 
@@ -78,7 +92,7 @@ https://sunic007.github.io/lampa-android/sunic.js
 <details>
 <summary><b>В «Расширениях» ошибка 404 или «Не удалось проверить»</b></summary>
 <br>
-<div align="justify">Проверьте адрес — он должен быть ровно <code>https://sunic007.github.io/lampa-android/sunic.js</code>. «Не удалось проверить» бывает, когда сеть медленная: перезапустите Lampa — раздел «Sunic Apps» появится, если плагин загрузился.</div>
+<div align="justify">Проверьте адрес — он должен быть ровно <code>https://sunic.stream/sunic.js</code> (или старый <code>https://sunic007.github.io/lampa-android/sunic.js</code>). «Не удалось проверить» бывает, когда сеть медленная: перезапустите Lampa — раздел «Sunic Apps» появится, если плагин загрузился.</div>
 </details>
 
 <details>
