@@ -22,7 +22,8 @@
     var PLUGIN_URL = 'https://sunic007.github.io/lampa-android/sunic.js';
     var MANIFEST = 'https://raw.githubusercontent.com/sunic007/lampa-android/main/version.json';
     var SAMSUNG = 'https://raw.githubusercontent.com/sunic007/lampa-samsung/main/version.json';
-    var MIRRORS = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/'];
+    // последний — свой хостинг (sunic.stream/gh/ — те же адреса): выручает, когда у человека закрыты GitHub и jsDelivr
+    var MIRRORS = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/', 'https://sunic.stream/gh/'];
     // на случай, когда GitHub недоступен и ничего не запомнено; tools/bump.py вписывает сюда выпуск из version.json
     var PIN = { version: '2.3.10', samsung: '2.3.10', modules: ['bsreport.js', 'skazauto.js', 'playerguard.js', 'bsfeatures.js', 'bsplayer.js', 'bsrch.js', 'bsprobe.js', 'bsfix.js', 'bssources.js', 'bsmenu.js', 'bscontinue.js', 'bswatch.js', 'bstg.js'] };
     // не для Android: loader.js грузит ядро Lampa (его заменяет src/android.js), update.js/polyfills.js — для Tizen,
