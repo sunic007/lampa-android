@@ -78,13 +78,19 @@
     function pickSamsung(min, cb) {
         var keep = savedSamsung(min);
         if (get('sa_gh_update') === 'false') return cb(keep, keep);
-        xhr(SAMSUNG + '?t=' + Date.now(), 4000, function (st, text) {
-            var m = null;
-            try { m = JSON.parse(text); } catch (e) {}
-            var mods = m ? onlyAndroid(m.files) : [];
-            if (st !== 200 || !m || !num(m.version) || !mods.length || m.version === bad('sa_sam_bad') || num(m.version) < num(keep.v)) return cb(keep, keep);
-            cb({ v: m.version, modules: mods, notes: m.notes || null }, keep);
-        });
+        // GitHub в этой стране/сети закрыт — тот же version.json с jsDelivr (ветка main)
+        var urls = [SAMSUNG].concat(MIRRORS.map(function (m) { return m + 'sunic007/lampa-samsung@main/version.json'; }));
+        (function next(i) {
+            if (i >= urls.length) return cb(keep, keep);
+            xhr(urls[i] + '?t=' + Date.now(), i ? 3000 : 4000, function (st, text) {
+                var m = null;
+                try { m = JSON.parse(text); } catch (e) {}
+                var mods = m ? onlyAndroid(m.files) : [];
+                if (st !== 200 || !m || !num(m.version) || !mods.length) return next(i + 1);
+                if (m.version === bad('sa_sam_bad') || num(m.version) < num(keep.v)) return cb(keep, keep);
+                cb({ v: m.version, modules: mods, notes: m.notes || null }, keep);
+            });
+        })(0);
     }
 
     /** Все адреса по порядку: модули Samsung, android.js последним; css отдельно. */
