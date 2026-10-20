@@ -69,16 +69,17 @@
     ];
     var LAYOUT = [
         ['bs_player', ['#Надёжность воспроизведения', 'bs_player_auto', 'bs_guard', 'bs_bw_quality', 'bs_buffer',
-            '#Во время просмотра', 'bs_resume_ask', 'bs_noads', 'bs_segments', 'bs_track_memory', 'bs_next_countdown', 'bs_still', 'bs_sleep', 'bs_vol_memory', 'bs_vol_night']],
+            '#Во время просмотра', 'bs_resume_ask', 'bs_noads', 'bs_segments', 'bs_track_memory', 'bs_next_countdown', 'bs_next_season', 'bs_still', 'bs_sleep', 'bs_vol_memory', 'bs_vol_night']],
         ['bs_iface', ['bs_watch_btn', 'bs_online_resume', 'bs_ru_auto', 'bs_menu_turk', 'bs_menu_kids', 'bs_continue_row']],
-        ['bs_telegram', ['#Подключение', 'bs_tg_phone', 'bs_tg_join', 'bs_tg_help', 'bs_tg_token', 'bs_tg_link', 'bs_tv_name', 'bs_tg_off',
+        ['bs_telegram', ['#Общий бот — без токена', 'bs_sb_link', 'bs_sb_off',
+            '#Свой бот (бесплатно)', 'bs_tg_phone', 'bs_tg_join', 'bs_tg_help', 'bs_tg_token', 'bs_tg_link', 'bs_tv_name', 'bs_tg_off',
             '#Бот', 'bs_tg_on', 'bs_tg_shots', 'bs_search_qr', 'bs_tg_check',
             '#Люди и доступ', 'bs_tg_approve', 'bs_tg_guest_play', 'bs_tg_invite_reset']],
         ['bs_online', ['#Источники', 'bs_auto_source', 'bs_race', 'bs_torrents', 'bs_srv_title', 'bs_srv_now', 'bs_srv_auto', 'bs_srv_pick',
-            '#Другие источники (на выбор)', 'bs_src_main', 'bs_src_z01', 'bs_src_online_mod', 'bs_src_vod_llpp', 'bs_src_showy', 'bs_src_arkmv']]
+            '#Источники на выбор', 'bs_src_main', 'bs_src_z01', 'bs_src_online_mod', 'bs_src_vod_llpp', 'bs_src_showy', 'bs_src_arkmv']]
     ];
     // как на ТВ (служебное и отладка) + только для Samsung: AVPlay, реклама (решает приложение)
-    var HIDDEN = ['bs_feat_title', 'bs_cont_title', 'bs_keys_info', 'bs_fast_start', 'bs_diag', 'bs_src_badge',
+    var HIDDEN = ['bs_feat_title', 'bs_cont_title', 'bs_keys_info', 'bs_fast_start', 'bs_diag', 'bs_src_badge', 'bs_sleep', 'bs_srv_now',
         'bs_player_auto', 'bs_buffer', 'bs_noads'];
     var NEEDS = { bs_player_auto: { on: 'bs_guard' }, bs_race: { on: 'bs_auto_source' } };
     // только для Samsung: AVPlay (запасной плеер, буфер), реклама (решает приложение)

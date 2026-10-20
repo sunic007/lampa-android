@@ -168,7 +168,7 @@ function androidEnv(store, opt) {
         Lampa: { SettingsApi: api, Template: { add() {} }, Settings: { listener: { follow() {} }, create() {} }, Storage: { listener: { follow() {} } }, Noty: { show() {} } },
         $: () => ({ find: () => ({ toggleClass() {} }), toggleClass() {} }) };
     ctx.Storage.prototype = { clear() {} };
-    ['BSSkaz', 'BSGuard', 'BSFeatures', 'BSPlayer', 'BSRch', 'BSFix', 'BSSources', 'BSMenu', 'BSContinue', 'BSWatch', 'BSTelegram', 'BSHub', 'BSVolume'].forEach(n => { ctx[n] = mod(n); });
+    ['BSSkaz', 'BSGuard', 'BSFeatures', 'BSPlayer', 'BSRch', 'BSFix', 'BSSources', 'BSMenu', 'BSContinue', 'BSWatch', 'BSTelegram', 'BSBot', 'BSHub', 'BSVolume'].forEach(n => { ctx[n] = mod(n); });
     ctx.BSSkaz.prepare = cb => { started.push('prepare'); cb(); };
     // модуль регистрирует свои пункты в 'bs_update' при start()
     ctx.BSGuard.start = () => { started.push('BSGuard'); ctx.Lampa.SettingsApi.addParam({ component: 'bs_update', param: { name: 'bs_guard', type: 'trigger' }, field: { name: 'Сторож' } });
@@ -181,7 +181,7 @@ function androidEnv(store, opt) {
 {
     const A = androidEnv();
     const order = A.started.filter(n => n !== 'prepare');
-    t('android.js: модули запускаются по порядку loader.js, без BSHub и BSVolume', order.join() === 'BSSkaz,BSGuard,BSFeatures,BSPlayer,BSRch,BSFix,BSSources,BSMenu,BSContinue,BSWatch,BSTelegram');
+    t('android.js: модули запускаются по порядку loader.js, без BSHub и BSVolume', order.join() === 'BSSkaz,BSGuard,BSFeatures,BSPlayer,BSRch,BSFix,BSSources,BSMenu,BSContinue,BSWatch,BSTelegram,BSBot');
     t('android.js: серверы Skaz — быстрый замер (prepare) до запуска модулей', A.started[0] === 'prepare');
     t('android.js: один раздел «Sunic Apps»', A.comps.length === 1 && A.comps[0].component === 'bs_apps' && A.comps[0].name === 'Sunic Apps');
     const guard = A.params.find(p => p.param.name === 'bs_guard');
