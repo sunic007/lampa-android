@@ -1,7 +1,7 @@
 /*
  * Sunic Apps для Lampa на Android — плагин для Lampa BS и других сборок Lampa для Android.
  *
- * Подключение: Lampa → Настройки → Расширения → Добавить плагин → https://sunic007.github.io/lampa-android/sunic.js
+ * Подключение: Lampa → Настройки → Расширения → Добавить плагин → https://sunic.stream/sunic.js (или https://sunic007.github.io/lampa-android/sunic.js)
  *
  * Этот файл — только загрузчик, он почти не меняется. Функции — те же, что в Lampa для Samsung, и ВСЕГДА её последней
  * выпущенной версии: при каждом запуске плагин смотрит version.json пакета (sunic007/lampa-samsung) и берёт модули с
@@ -199,7 +199,7 @@
             if (Object.prototype.toString.call(list) !== '[object Array]') return;
             for (var i = 0; i < list.length; i++) {
                 var p = list[i], u = p && String(p.url || p.link || '').split('?')[0];
-                if (u !== PLUGIN_URL) continue;
+                if (u !== PLUGIN_URL && !/^(https?:\/\/)?sunic\.stream\/sunic\.js$/.test(u)) continue;   // и короткий адрес
                 if (p.name !== 'Sunic Apps') { p.name = 'Sunic Apps'; changed = true; }
                 if (p.author !== '@sunic007') { p.author = '@sunic007'; changed = true; }
             }
