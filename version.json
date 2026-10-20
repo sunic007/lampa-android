@@ -1,6 +1,6 @@
 {
- "version": "2.3.8",
- "samsung": "2.3.8",
+ "version": "2.3.10",
+ "samsung": "2.3.10",
  "modules": [
   "bsreport.js",
   "skazauto.js",
@@ -17,9 +17,9 @@
   "bstg.js"
  ],
  "notes": {
-  "title": "обновления доходят и там, где GitHub закрыт",
+  "title": "Online Mod сам ищет в других балансерах",
   "items": [
-   "Проверка новой версии берёт version.json с GitHub, а если он в этой стране или сети закрыт — с jsDelivr (три сети). Так же в Android-плагине и в Media Station X (sunic.stream). Действует с этой установки .wgt; уже уст…"
+   "В Online Mod «Видео не найдено» в одном балансере — больше не тупик: Sunic Apps сам пробует следующий (сначала те, что чаще находят: Collaps, Filmix, Kodik, CDNVideoHub…), пусто во всех — переходит к следующему источн…"
   ]
  }
 }
