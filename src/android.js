@@ -433,7 +433,7 @@
             var c = JSON.parse(lsGet(key) || 'null');
             if (c && c.v === v && applyLoader(c.p)) return fin();
         } catch (e) {}
-        var mirrors = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/'];
+        var mirrors = ['https://cdn.jsdelivr.net/gh/', 'https://fastly.jsdelivr.net/gh/', 'https://gcore.jsdelivr.net/gh/', 'https://sunic.stream/gh/'];
         setTimeout(fin, 8000);
         (function next(i) {
             if (i >= mirrors.length || done) return fin();

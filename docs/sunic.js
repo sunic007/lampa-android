@@ -134,10 +134,17 @@
             document.body.appendChild(s);
         }
         try {
-            var l = document.createElement('link');
-            l.rel = 'stylesheet';
-            l.href = urls(r, r.mirror).css;
-            document.head.appendChild(l);
+            (function css(m, tries) {
+                var l = document.createElement('link');
+                l.rel = 'stylesheet';
+                l.href = urls(r, m).css;
+                // не пришёл с этого зеркала — со следующего (у каждого адреса есть запасной)
+                l.onerror = function () {
+                    if (l.parentNode) l.parentNode.removeChild(l);
+                    if (tries + 1 < MIRRORS.length) css((m + 1) % MIRRORS.length, tries + 1);
+                };
+                document.head.appendChild(l);
+            })(r.mirror, 0);
         } catch (e) {}
         one(r.mirror, 0);
     }
@@ -172,10 +179,14 @@
     function check(cb) {
         var fin = function (v, r) { if (!cb) return; var c = cb; cb = null; c(v || '', r || null); };
         if (get('sa_gh_update') === 'false') return fin('');
-        xhr(MANIFEST + '?t=' + Date.now(), 15000, function (st, text) {
+        // GitHub в этой сети закрыт — тот же version.json с зеркал (jsDelivr, свой хостинг): у каждого адреса есть запасной
+        var murls = [MANIFEST].concat(MIRRORS.map(function (m) { return m + 'sunic007/lampa-android@main/version.json'; }));
+        (function nextManifest(mi) {
+        if (mi >= murls.length) return fin('');
+        xhr(murls[mi] + '?t=' + Date.now(), mi ? 6000 : 15000, function (st, text) {
             var r = null;
             try { r = JSON.parse(text); } catch (e) {}
-            if (st !== 200 || !r || !num(r.version)) return fin('');
+            if (st !== 200 || !r || !num(r.version)) return nextManifest(mi + 1);
             if (num(r.version) <= num(running && running.version) || r.version === bad('sa_upd_bad')) return fin('');
             var upd = json('sa_upd');
             if (upd && upd.version === r.version && upd.ok) return fin(r.version, r);   // уже проверена
@@ -186,6 +197,7 @@
                 fin(r.version, r);
             });
         });
+        })(0);
     }
 
     /** Согласились обновить: версия, на которой раньше не поднялась, получает ещё шанс. */

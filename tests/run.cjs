@@ -136,6 +136,16 @@ const mods = A => A.scripts().map(s => s.src).filter(u => /lampa-samsung/.test(u
     const C = env({ net: x => { x.status = 200; x.responseText = JSON.stringify({ version: PIN.version, samsung: '2.1.1' }); x.onload(); } });
     let gc = 'x'; C.ctx.SunicAndroid.check(v => { gc = v; });
     t('та же версия — обновлений нет', gc === '');
+    // GitHub закрыт: version.json плагина — с зеркала (правило «у каждого адреса есть запасной»)
+    const D = env({ net: samNet({ version: '0.0.1', files: [] }, x => {
+        if (x.method === 'GET') {
+            if (/raw\.githubusercontent/.test(x.url)) { x.status = 0; return x.onerror ? x.onerror() : x.onload(); }
+            x.status = 200; x.responseText = JSON.stringify(R); return x.onload();
+        }
+        x.status = 200; x.onload();
+    }) });
+    let gd = null; D.ctx.SunicAndroid.check(v => { gd = v; });
+    t('GitHub закрыт — новая версия плагина видна через зеркало', gd === '99.0.0' && D.xhrs.some(x => /jsdelivr\.net\/gh\/sunic007\/lampa-android@main\/version\.json/.test(x.url)));
 }
 {
     const A = env({ plugins: [{ url: 'https://sunic007.github.io/lampa-android/sunic.js', status: 1 }, { url: 'http://skaz.tv/tv.js', name: 'ТВ by Skaz' }] });
