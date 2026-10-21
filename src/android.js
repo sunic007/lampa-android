@@ -71,8 +71,7 @@
         ['bs_player', ['#Надёжность воспроизведения', 'bs_player_auto', 'bs_guard', 'bs_bw_quality', 'bs_buffer',
             '#Во время просмотра', 'bs_resume_ask', 'bs_noads', 'bs_segments', 'bs_track_memory', 'bs_next_countdown', 'bs_next_season', 'bs_still', 'bs_sleep', 'bs_vol_memory', 'bs_vol_night']],
         ['bs_iface', ['bs_watch_btn', 'bs_online_resume', 'bs_ru_auto', 'bs_menu_turk', 'bs_menu_kids', 'bs_continue_row', 'bs_iptv_lists']],
-        ['bs_telegram', ['#Общий бот — без токена', 'bs_sb_link', 'bs_sb_off',
-            '#Свой бот (бесплатно)', 'bs_tg_phone', 'bs_tg_join', 'bs_tg_help', 'bs_tg_token', 'bs_tg_link', 'bs_tv_name', 'bs_tg_off',
+        ['bs_telegram', [            '#Свой бот (бесплатно)', 'bs_tg_phone', 'bs_tg_join', 'bs_tg_help', 'bs_tg_token', 'bs_tg_link', 'bs_tv_name', 'bs_tg_off',
             '#Бот', 'bs_tg_on', 'bs_tg_shots', 'bs_search_qr', 'bs_tg_check',
             '#Люди и доступ', 'bs_tg_approve', 'bs_tg_guest_play', 'bs_tg_invite_reset']],
         ['bs_online', ['#Источники', 'bs_auto_source', 'bs_race', 'bs_torrents', 'bs_srv_title', 'bs_srv_now', 'bs_srv_auto', 'bs_srv_pick',
@@ -338,7 +337,7 @@
     /* ---------- запуск модулей ---------- */
 
     // Порядок — как в loader.js пакета; BSHub и BSVolume — только для Samsung, сюда не грузятся
-    var MODULES = ['BSSkaz', 'BSGuard', 'BSFeatures', 'BSPlayer', 'BSRch', 'BSFix', 'BSSources', 'BSMenu', 'BSContinue', 'BSWatch', 'BSTelegram', 'BSBot'];
+    var MODULES = ['BSSkaz', 'BSGuard', 'BSFeatures', 'BSPlayer', 'BSRch', 'BSFix', 'BSSources', 'BSMenu', 'BSContinue', 'BSWatch', 'BSTelegram'];
     var SAMSUNG_ONLY_MODULES = { BSHub: 1, BSVolume: 1 };
 
     /* ---------- раскладка из loader.js той же версии Lampa для Samsung ----------
