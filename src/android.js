@@ -337,7 +337,7 @@
     /* ---------- запуск модулей ---------- */
 
     // Порядок — как в loader.js пакета; BSHub и BSVolume — только для Samsung, сюда не грузятся
-    var MODULES = ['BSSkaz', 'BSGuard', 'BSFeatures', 'BSPlayer', 'BSRch', 'BSFix', 'BSSources', 'BSMenu', 'BSContinue', 'BSWatch', 'BSTelegram'];
+    var MODULES = ['BSSkaz', 'BSGuard', 'BSFeatures', 'BSPlayer', 'BSRch', 'BSFix', 'BSSources', 'BSMenu', 'BSContinue', 'BSWatch', 'BSTelegram', 'BSTv'];
     var SAMSUNG_ONLY_MODULES = { BSHub: 1, BSVolume: 1 };
 
     /* ---------- раскладка из loader.js той же версии Lampa для Samsung ----------
