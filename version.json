@@ -1,6 +1,6 @@
 {
- "version": "2.3.71",
- "samsung": "2.3.71",
+ "version": "2.3.72",
+ "samsung": "2.3.72",
  "modules": [
   "bsdevice.js",
   "bsreport.js",
