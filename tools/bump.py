@@ -31,6 +31,11 @@ def samsung_modules(ver):
         data = json.load(urllib.request.urlopen(url, timeout=20))
     except Exception as e:
         die('не прочитать %s (%s) — такой версии Lampa для Samsung нет или нет сети' % (url, e))
+    # поэтапная выкатка у Samsung (tools/rollout.py): новая версия лежит в version.json своего тега в "next", а "version"
+    # там — прежняя проверенная. Android берёт её, только когда на main она стала "version" (выкатка на 100%)
+    nx = data.get('next') if isinstance(data.get('next'), dict) else None
+    if data.get('version') != ver and nx and nx.get('version') == ver and nx.get('files'):
+        data = nx
     if data.get('version') != ver:
         die('по тегу v%s лежит version.json версии %s' % (ver, data.get('version')))
     return [f for f in data['files'] if f not in SAMSUNG_ONLY], data.get('notes') or {}
